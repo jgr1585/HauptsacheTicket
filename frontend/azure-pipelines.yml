@@ -1,0 +1,40 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+      - '*'
+
+pool:
+  name: Default
+  demands:
+  - Agent.Name -equals teamhd
+
+steps:
+- script: |
+    chmod u+x gradlew
+  displayName: 'Make gradle Executable'
+
+- task: Gradle@3
+  inputs:
+    gradleWrapperFile: 'gradlew'
+    tasks: 'clean build jar'
+    publishJUnitResults: true
+    testResultsFiles: '**/TEST-*.xml'
+    javaHomeOption: 'JDKVersion'
+    sonarQubeRunAnalysis: false
+    spotBugsAnalysis: false
+  displayName: "Build Application"
+  continueOnError: true
+
+- script: |
+    sonar-scanner \
+      -Dsonar.projectKey=Frontend \
+      -Dsonar.sources=. \
+      -Dsonar.host.url=http://10.0.40.174:9000 \
+      -Dsonar.login=sqp_402e6b74d87fb62b467a7b9343b60d8299769cc0
+  displayName: 'Verify Application'
+  condition: always()

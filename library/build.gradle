@@ -1,0 +1,63 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id "net.linguica.maven-settings" version "0.5"
+    id 'org.jetbrains.kotlin.jvm' version '1.8.10'
+}
+
+group 'at.fhv.teamh.hauptsach_ticket'
+version '2.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url 'https://pkgs.dev.azure.com/ITB21EC/0c41c642-0cfc-4216-abd9-6a230d713525/_packaging/library/maven/v1'
+        name 'library'
+        authentication {
+            basic(BasicAuthentication)
+        }
+    }
+}
+
+publishing {
+    publications {
+        myJava(MavenPublication) {
+            from components.java
+
+
+            dependencies {
+                implementation('ch.qos.logback:logback-classic:1.4.6')
+                implementation('io.github.microutils:kotlin-logging-jvm:3.0.5')
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url 'https://pkgs.dev.azure.com/ITB21EC/0c41c642-0cfc-4216-abd9-6a230d713525/_packaging/library/maven/v1'
+            name 'library'
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
+
+}
+
+[compileKotlin, compileTestKotlin].forEach {
+    it.kotlinOptions.jvmTarget = '17'
+}
+
+dependencies {
+    //EJB
+    compileOnly 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
+
+    //Jackson
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.0'
+}
+
+test {
+    useJUnitPlatform()
+}

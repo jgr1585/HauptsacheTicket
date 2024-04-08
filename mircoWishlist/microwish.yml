@@ -1,0 +1,22 @@
+version: '2'
+
+volumes:
+  micro-mongo-wish-data:
+    driver: local
+
+services:
+  micro-wishlist:
+    image: microwish
+    container_name: hauptsachTicket-microWishlist
+    ports:
+      - "80:8080"
+    depends_on:
+      - micro-mongo-wish
+    environment:
+      - QUARKUS_SMALLRYE_OPENAPI_SERVERS=http://20.16.253.47:80
+
+  micro-mongo-wish:
+    image: mongo
+    container_name: hauptsachTicket-micro-mongo-wish
+    volumes:
+      - micro-mongo-wish-data:/data/db

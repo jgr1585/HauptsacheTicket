@@ -1,0 +1,72 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.jetbrains.kotlin.jvm' version '1.8.10'
+    id 'org.openjfx.javafxplugin' version '0.0.11'
+    id "net.linguica.maven-settings" version "0.5"
+}
+
+group 'at.fhv.teamh.hauptsach_ticket'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url 'https://pkgs.dev.azure.com/ITB21EC/0c41c642-0cfc-4216-abd9-6a230d713525/_packaging/library/maven/v1'
+        name 'library'
+        authentication {
+            basic(BasicAuthentication)
+        }
+    }
+}
+
+ext {
+    junitVersion = '5.9.1'
+}
+
+sourceCompatibility = '17'
+targetCompatibility = '17'
+
+application {
+    mainModule = 'at.fhv.teamh.hauptsach_ticket.frontend'
+    mainClass = 'at.fhv.teamh.hauptsach_ticket.frontend.MainKt'
+}
+
+[compileKotlin, compileTestKotlin].forEach {
+    it.kotlinOptions.jvmTarget = '17'
+}
+
+javafx {
+    version = '17.0.2'
+    modules = ['javafx.controls', 'javafx.graphics']
+}
+
+dependencies {
+    implementation 'org.wildfly:wildfly-client-all:28.0.0.Final'
+
+    implementation 'de.jensd:fontawesomefx-fontawesome:4.7.0-9.1.2'
+    implementation "no.tornado:tornadofx:1.7.20"
+    implementation 'org.controlsfx:controlsfx:11.1.2'
+
+    implementation 'io.github.microutils:kotlin-logging-jvm:3.0.5'
+    implementation 'at.fhv.teamh.hauptsach_ticket:library:2.0-SNAPSHOT'
+
+    // ActiveMQ client
+    implementation 'org.apache.activemq:activemq-client:5.18.1'
+
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes 'Main-Class': 'at.fhv.teamh.hauptsach_ticket.frontend.MainKt'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

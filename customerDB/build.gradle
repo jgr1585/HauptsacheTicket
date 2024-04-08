@@ -1,0 +1,61 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.8.10'
+    id 'net.linguica.maven-settings' version '0.5'
+    id 'org.jetbrains.kotlin.plugin.noarg' version '1.8.10'
+}
+
+group 'at.fhv.teamh.hauptsach_ticket'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url 'https://pkgs.dev.azure.com/ITB21EC/0c41c642-0cfc-4216-abd9-6a230d713525/_packaging/library/maven/v1'
+        name 'library'
+        authentication {
+            basic(BasicAuthentication)
+        }
+    }
+}
+
+apply plugin: "kotlin-jpa"
+
+noArg {
+    annotation("javax.persistence.Entity")
+}
+
+[compileKotlin, compileTestKotlin].forEach {
+    it.kotlinOptions.jvmTarget = '17'
+}
+
+dependencies {
+    implementation 'io.github.microutils:kotlin-logging-jvm:3.0.5'
+    implementation('at.fhv.teamh.hauptsach_ticket:library:2.0-SNAPSHOT') {
+        changing = true
+    }
+
+    // Hibernate with Postgres
+    implementation 'org.hibernate:hibernate-core:6.2.1.Final'
+    implementation 'org.postgresql:postgresql:42.6.0'
+}
+
+configurations.configureEach {
+    // Check for updates every build
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes 'Main-Class': 'at.fhv.teamh.hauptsach_ticket.customerDB.MainKt'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

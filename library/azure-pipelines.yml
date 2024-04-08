@@ -1,0 +1,30 @@
+# Gradle
+# Build your Java project and run tests with Gradle using a Gradle wrapper script.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+
+trigger:
+- master
+
+pool:
+  name: Default
+  demands:
+  - Agent.Name -equals teamhd
+
+steps:
+- script: |
+    chmod u+x gradlew
+    ./gradlew clean build jar
+  displayName: 'Build libaray'
+
+- script: |
+    ./gradlew publish
+  displayName: 'Publish library'
+
+- script: |
+    sonar-scanner \
+      -Dsonar.projectKey=library \
+      -Dsonar.sources=. \
+      -Dsonar.host.url=http://10.0.40.174:9000 \
+      -Dsonar.login=sqa_6e44eae0e5ff357e34e2e683600e82d3be164de6
+  displayName: 'Verify Application'

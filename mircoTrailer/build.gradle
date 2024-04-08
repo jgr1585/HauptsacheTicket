@@ -1,0 +1,103 @@
+import java.nio.file.Files
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version "1.8.21"
+    id 'org.jetbrains.kotlin.plugin.noarg' version '1.8.21'
+    id "org.jetbrains.kotlin.plugin.allopen" version "1.8.21"
+    id 'io.quarkus'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+noArg {
+    annotation("io.quarkus.mongodb.panache.common.MongoEntity")
+}
+
+dependencies {
+    implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+    implementation 'io.quarkus:quarkus-resteasy-reactive-jaxb'
+    implementation 'io.quarkus:quarkus-kotlin'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    implementation 'io.quarkus:quarkus-arc'
+    implementation 'io.quarkus:quarkus-resteasy-reactive'
+    implementation 'io.quarkus:quarkus-mongodb-panache-kotlin'
+
+    //Swagger
+    implementation "io.quarkus:quarkus-smallrye-openapi"
+
+    testImplementation 'io.quarkus:quarkus-junit5'
+    testImplementation 'io.rest-assured:rest-assured'
+}
+
+group 'at.fhv.teamh.hauptsach_ticket.backend'
+version '1.0.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+test {
+    systemProperty "java.util.logging.manager", "org.jboss.logmanager.LogManager"
+}
+allOpen {
+    annotation("jakarta.ws.rs.Path")
+    annotation("jakarta.enterprise.context.ApplicationScoped")
+    annotation("io.quarkus.test.junit.QuarkusTest")
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_17
+    kotlinOptions.javaParameters = true
+}
+
+compileTestKotlin {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_17
+}
+
+tasks.register('downloadFiles') {
+    doLast {
+        def urls = [
+                "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+                "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+                "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+                "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+                "https://storage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
+                "https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+        ]
+
+        def outputDir = new File("./videos")
+
+        // Create the output directory if it doesn't exist
+        if (!outputDir.exists()) {
+            outputDir.mkdirs()
+        }
+
+        urls.each { url ->
+            try {
+                def fileName = url.substring(url.lastIndexOf("/") + 1)
+                def outputFile = new File(outputDir, fileName)
+
+                if (!outputFile.exists()) {
+                    println "Downloading $fileName"
+                    new URL(url).withInputStream { inputStream ->
+                        Files.copy(inputStream, outputFile.toPath())
+                    }
+                } else {
+                    println "$fileName already exists. Skipping download."
+                }
+            } catch (Exception e) {
+                println "Failed to download $url: ${e.message}"
+            }
+        }
+    }
+}
+
+// Make the build task depend on downloadFiles
+build.dependsOn downloadFiles

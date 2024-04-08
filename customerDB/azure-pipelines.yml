@@ -1,0 +1,46 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  name: Default
+  demands:
+  - Agent.Name -equals teamhd
+
+steps:
+- script: |
+    chmod u+x gradlew
+  displayName: 'Make gradle Executable'
+
+- task: Gradle@3
+  inputs:
+    gradleWrapperFile: 'gradlew'
+    tasks: 'clean build jar'
+    publishJUnitResults: true
+    testResultsFiles: '**/TEST-*.xml'
+    codeCoverageToolOption: 'JaCoCo'
+    codeCoverageClassFilesDirectories: 'build/classes/kotlin/main/'
+    javaHomeOption: 'JDKVersion'
+    sonarQubeRunAnalysis: false
+    spotBugsAnalysis: false
+  displayName: "Build Application"
+  continueOnError: true 
+
+- script: |
+    sonar-scanner \
+      -Dsonar.projectKey=customerDB \
+      -Dsonar.sources=. \
+      -Dsonar.host.url=http://10.0.40.174:9000 \
+      -Dsonar.login=sqa_526c9477c2acb382167183e5f0bd2e89e617d8bd
+  displayName: 'Verify Application'
+  condition: always()
+
+- script: |
+    scp build/libs/CustomerDB-1.0-SNAPSHOT.jar svcfrontend@10.0.40.175:~/hauptsachCustomerDB/CustomerDB-1.0-SNAPSHOT.jar
+    ssh svcfrontend@10.0.40.175 'screen -S customerDB -X quit'
+    ssh svcfrontend@10.0.40.175 'screen -S customerDB -d -m java -jar ~/hauptsachCustomerDB/CustomerDB-1.0-SNAPSHOT.jar'
+  displayName: "Deploy"

@@ -1,0 +1,56 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+      - '*'
+
+pool:
+  name: Default
+  demands:
+  - Agent.Name -equals teamhd
+
+steps:
+- script: |
+    cp -R ~/spa/* ./src/main/webapp
+  displayName: 'Copy Spa'
+
+- script: |
+    chmod u+x gradlew
+    sed -i 's/http:\/\/localhost:8080/http:\/\/10.0.40.174:80/' src/main/kotlin/OpenAPIConfig.kt
+  displayName: 'Make gradle Executable'
+
+- task: Gradle@3
+  inputs:
+    gradleWrapperFile: 'gradlew'
+    tasks: 'clean build'
+    publishJUnitResults: true
+    testResultsFiles: '**/TEST-*.xml'
+    javaHomeOption: 'JDKVersion'
+    sonarQubeRunAnalysis: false
+    spotBugsAnalysis: false
+  displayName: "Build Application"
+  continueOnError: true
+
+- task: PublishCodeCoverageResults@2
+  inputs:
+    summaryFileLocation: 'build/reports/jacoco/test/jacocoTestReport.xml'
+  condition: always()
+
+- script: |
+    sonar-scanner \
+      -Dsonar.projectKey=backend \
+      -Dsonar.sources=. \
+      -Dsonar.host.url=http://10.0.40.174:9000 \
+      -Dsonar.login=sqa_8d41b5ce316e55e1d7f8b327966e64be61729424 \
+      -Dsonar.exclusions=**/jakarta/** 
+  displayName: 'Verify Application'
+  condition: always()
+
+- script: |
+    scp build/libs/Backend-1.0-SNAPSHOT.war svccust@localhost:/deploy/Backend-1.0-SNAPSHOT.war
+  displayName: "Deploy"
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')

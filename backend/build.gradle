@@ -1,0 +1,134 @@
+plugins {
+    id 'java'
+    id 'war'
+    id 'jacoco'
+    id 'org.jetbrains.kotlin.jvm' version '1.8.10'
+    id 'net.linguica.maven-settings' version '0.5'
+    id 'org.jetbrains.kotlin.plugin.noarg' version '1.8.10'
+    id 'io.swagger.core.v3.swagger-gradle-plugin' version '2.2.9'
+}
+
+group 'at.fhv.teamh.hauptsach_ticket'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url 'https://pkgs.dev.azure.com/ITB21EC/0c41c642-0cfc-4216-abd9-6a230d713525/_packaging/library/maven/v1'
+        name 'library'
+        authentication {
+            basic(BasicAuthentication)
+        }
+    }
+}
+
+apply plugin: "kotlin-jpa"
+
+noArg {
+    annotation("javax.persistence.Entity")
+    annotation("at.fhv.teamh.hauptsach_ticket.backend.application.decorators.DefaultNoArgConstructor")
+}
+
+[compileKotlin, compileTestKotlin].forEach {
+    it.kotlinOptions.jvmTarget = '17'
+}
+
+dependencies {
+    // Shared Library
+    implementation('at.fhv.teamh.hauptsach_ticket:library:2.0-SNAPSHOT') {
+        changing = true
+    }
+
+    // Hibernate with Postgres
+    implementation 'org.hibernate:hibernate-core:6.2.1.Final'
+    implementation 'org.postgresql:postgresql:42.6.0'
+
+    // Mockito
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:3.2.0'
+
+    // Kotlin Test
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+
+    //ActiveMQ
+    implementation 'org.apache.activemq:activemq-broker:5.18.1'
+
+    //EJB
+    compileOnly 'jakarta.platform:jakarta.jakartaee-core-api:10.0.0'
+    compileOnly 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
+
+    //Swagger
+    implementation 'io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.9'
+    implementation 'io.swagger.core.v3:swagger-jaxrs2-servlet-initializer-jakarta:2.2.9'
+    implementation 'io.swagger.core.v3:swagger-integration-jakarta:2.2.9'
+
+    //JJwt
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    //Jackson
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.0'
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.15.0'
+    implementation 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.15.0'
+}
+
+configurations.configureEach {
+    // Check for updates every build
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+resolve {
+    outputFileName = 'openapi'
+    outputFormat = 'YAML'
+    prettyPrint = 'TRUE'
+    classpath = sourceSets.main.compileClasspath
+    resourcePackages = ['at.fhv.teamh.hauptsach_ticket.backend']
+    outputDir = file('src/main/webapp')
+    alwaysResolveAppPath = 'TRUE'
+}
+
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes 'Main-Class': 'at.fhv.teamh.hauptsach_ticket.backend.MainKt'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+war {
+    //Download Swagger UI
+    mkdir file("${buildDir}/tmp")
+    def swagger = file("${buildDir}/tmp/swagger.zip")
+    if (!swagger.exists()) {
+        new URL('https://github.com/swagger-api/swagger-ui/archive/refs/tags/v4.18.3.zip').withInputStream { i -> swagger.withOutputStream { it << i } }
+    }
+
+    //Unzip Swagger UI and copy to build directory
+    def subDir = 'swagger-ui-4.18.3/dist'
+    def srcZip = zipTree(swagger).matching { include "$subDir/**" exclude '**/swagger-initializer.js' }
+    copy {
+        from srcZip
+        into file("src/main/webapp/swagger-ui")
+        eachFile { f ->
+            f.path = f.path.replaceFirst("^$subDir", '')
+        }
+    }
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        html.required = true
+        xml.required = true
+    }
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}

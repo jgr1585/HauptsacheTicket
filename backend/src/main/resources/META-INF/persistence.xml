@@ -1,0 +1,72 @@
+<!-- Java Persistent Config for MariaDB-->
+<!-- Path: src/main/java/META-INF/persistence.xml -->
+
+<persistence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns="https://jakarta.ee/xml/ns/persistence"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+
+    <persistence-unit name="main">
+        <description>Hibernate EntityManager</description>
+
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.AccountPermission</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Account</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Event</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Location</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Order</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Organiser</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Payment</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Series</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Ticket</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.TicketCategory</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.TicketNumber</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.WebUser</class>
+
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://10.0.40.174:5432/postgres"/>
+            <property name="jakarta.persistence.jdbc.user" value="postgres"/>
+            <property name="jakarta.persistence.jdbc.password" value='zgUVeK7g6BWPzCyCYsVQzvvkB'/>
+            <property name="hibernate.enable_lazy_load" value="true"/>
+            <property name="hibernate.enable_lazy_load_no_trans" value="true"/>
+            <property name="hibernate.generate_statistics" value="true"/>
+
+
+            <property name="hibernate.connection.pool_size" value="30"/>
+        </properties>
+    </persistence-unit>
+
+
+    <persistence-unit name="dev">
+        <description>Hibernate EntityManager</description>
+
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Account</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.AccountPermission</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Event</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Location</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Order</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Organiser</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Payment</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Series</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.Ticket</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.TicketCategory</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.TicketNumber</class>
+        <class>at.fhv.teamh.hauptsach_ticket.backend.domain.WebUser</class>
+
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.enable_lazy_load" value="true"/>
+            <property name="hibernate.enable_lazy_load_no_trans" value="true"/>
+            <property name="hibernate.generate_statistics" value="true"/>
+
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.url"
+                      value="jdbc:postgresql://hauptsachTicket-backend-db:5432/postgres"/>
+            <property name="jakarta.persistence.jdbc.user" value="postgres"/>
+            <property name="jakarta.persistence.jdbc.password" value="postgres"/>
+
+            <property name="hibernate.connection.pool_size" value="30"/>
+        </properties>
+    </persistence-unit>
+</persistence>

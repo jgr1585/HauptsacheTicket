@@ -1,0 +1,49 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+      - 'master'
+
+pool:
+  name: Default
+  demands:
+  - Agent.Name -equals teamhd
+
+steps:
+- script: |
+    docker build . -t microtrailer
+    docker build ./microTrailerMongo -t microtrailer-mongo
+  displayName: 'Build Docker'
+
+- script: |
+    docker save -o microtrailer.tar microtrailer
+    docker save -o microtrailer-mongo.tar microtrailer-mongo
+
+    scp -i ~/.ssh/azureuser.pem ./microtrailer.tar azureuser@20.16.253.47:~/microtrailer.tar
+    scp -i ~/.ssh/azureuser.pem ./microtrailer-mongo.tar azureuser@20.16.253.47:~/microtrailer-mongo.tar
+    scp -i ~/.ssh/azureuser.pem ./microtrailer.yml azureuser@20.16.253.47:~/microtrailer.yml
+
+    ssh -i ~/.ssh/azureuser.pem azureuser@20.16.253.47 'docker load -i ~/microtrailer.tar'
+    ssh -i ~/.ssh/azureuser.pem azureuser@20.16.253.47 'docker load -i ~/microtrailer-mongo.tar'
+
+    ssh -i ~/.ssh/azureuser.pem azureuser@20.16.253.47 'rm ~/microtrailer.tar'
+    ssh -i ~/.ssh/azureuser.pem azureuser@20.16.253.47 'rm ~/microtrailer-mongo.tar'
+  displayName: 'Copy to Cloud'
+
+- script: |
+    ssh -i ~/.ssh/azureuser.pem azureuser@20.16.253.47 'docker compose -f microtrailer.yml up --force-recreate -d'
+    ssh -i ~/.ssh/azureuser.pem azureuser@20.16.253.47 'rm microtrailer.yml'
+  displayName: 'Run Microservice'
+
+- script: |
+    sonar-scanner \
+      -Dsonar.projectKey=mircoTrailer \
+      -Dsonar.sources=. \
+      -Dsonar.host.url=http://10.0.40.174:9000 \
+      -Dsonar.login=sqa_8d41b5ce316e55e1d7f8b327966e64be61729424
+  displayName: "Verify Application"
+  condition: always()

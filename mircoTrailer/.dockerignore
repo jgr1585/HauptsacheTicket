@@ -1,0 +1,15 @@
+*
+!build/*-runner
+!build/*-runner.jar
+!build/lib/*
+!build/quarkus-app/*
+
+# Required for Building
+!settings.xml
+!build.gradle
+!gradle.properties
+!settings.gradle
+!src/*
+!gradle/*
+!gradlew
+!videos/*

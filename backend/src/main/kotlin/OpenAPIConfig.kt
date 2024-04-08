@@ -1,0 +1,1 @@
+const val openAPIServer = "http://localhost:8080"

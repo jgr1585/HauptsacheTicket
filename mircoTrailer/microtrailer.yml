@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  micro-trailer:
+    image: microtrailer
+    container_name: hauptsachTicket-microTrailer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - micro-mongo-trailer
+    environment:
+      - QUARKUS_SMALLRYE_OPENAPI_SERVERS=http://20.16.253.47:8080
+
+  micro-mongo-trailer:
+    image: microtrailer-mongo
+    container_name: hauptsachTicket-micro-mongo-trailer

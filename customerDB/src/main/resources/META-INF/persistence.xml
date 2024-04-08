@@ -1,0 +1,40 @@
+<!-- Java Persistent Config for MariaDB-->
+<!-- Path: src/main/java/META-INF/persistence.xml -->
+
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             version="2.0">
+
+    <persistence-unit name="main">
+        <class>at.fhv.teamh.hauptsach_ticket.customerDB.domain.Customer</class>
+
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://10.0.40.175:5432/postgres"/>
+            <property name="jakarta.persistence.jdbc.user" value="postgres"/>
+            <property name="jakarta.persistence.jdbc.password" value='postgres'/>
+            <property name="hibernate.enable_lazy_load" value="true"/>
+
+            <property name="hibernate.connection.pool_size" value="30"/>
+        </properties>
+    </persistence-unit>
+
+
+    <persistence-unit name="dev">
+        <class>at.fhv.teamh.hauptsach_ticket.customerDB.domain.Customer</class>
+
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="show_sql" value="true"/>
+            <property name="hibernate.temp.use_jdbc_metadata_defaults" value="false"/>
+
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.url"
+                      value="jdbc:postgresql://hauptsachTicket-customer-db:5432/postgres"/>
+            <property name="jakarta.persistence.jdbc.user" value="postgres"/>
+            <property name="jakarta.persistence.jdbc.password" value="postgres"/>
+        </properties>
+    </persistence-unit>
+</persistence>
